@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.local
+.dev.vars
+bookshelf.sqlite
+bookshelf.sqlite-shm
+bookshelf.sqlite-wal
+d1-import.sql
+.DS_Store
