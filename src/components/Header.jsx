@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { LogOut, Menu, Plus, Search } from 'lucide-react';
+import { LogOut, Menu, Moon, Plus, Search, Sun } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import { formatLongDate } from '../utils/dates.js';
 
@@ -12,7 +12,7 @@ const TITLES = {
   '/wishlist': 'Wishlist',
 };
 
-export default function Header({ onMenu, onSignOut }) {
+export default function Header({ onMenu, onSignOut, theme = 'light', onToggleTheme }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -51,6 +51,15 @@ export default function Header({ onMenu, onSignOut }) {
       <button className="btn btn-primary" onClick={() => openAddBook()}>
         <Plus size={18} />
         <span className="btn-text">Add a Book</span>
+      </button>
+      <button
+        className="icon-btn theme-toggle"
+        onClick={onToggleTheme}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+        aria-pressed={theme === 'dark'}
+        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+      >
+        {theme === 'dark' ? <Sun size={19} /> : <Moon size={19} />}
       </button>
       {onSignOut && <button className="icon-btn" onClick={onSignOut} aria-label="Sign out" title="Sign out"><LogOut size={18} /></button>}
     </header>

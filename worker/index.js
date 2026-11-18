@@ -10,7 +10,21 @@ function json(body, status = 200, headers = {}) {
 function corsHeaders(request, env) {
   const origin = request.headers.get('Origin');
   const allowedOrigins = (env.ALLOWED_ORIGINS || '').split(',').map((value) => value.trim());
-  if (!origin || !allowedOrigins.includes(origin)) return {};
+  if (!origin) return {};
+  let normalizedOrigin;
+  try {
+    normalizedOrigin = new URL(origin).origin;
+  } catch {
+    return {};
+  }
+  const allowed = allowedOrigins.some((value) => {
+    try {
+      return new URL(value).origin === normalizedOrigin;
+    } catch {
+      return false;
+    }
+  });
+  if (!allowed) return {};
   return {
     'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',

@@ -51,6 +51,13 @@ function SignInScreen({ onSignIn }) {
 
 export default function App() {
   const { authRequired, authenticated, signIn, signOut } = useLibrary();
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem('my-bookshelf-theme') === 'dark' ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
   const [collapsed, setCollapsed] = useState(() => {
     try {
       return localStorage.getItem('my-bookshelf-sidebar') === 'collapsed';
@@ -60,6 +67,16 @@ export default function App() {
   });
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    try {
+      localStorage.setItem('my-bookshelf-theme', theme);
+    } catch {
+      /* Theme remains active for this visit if browser storage is unavailable. */
+    }
+  }, [theme]);
 
   useEffect(() => {
     try {
@@ -88,7 +105,12 @@ export default function App() {
       {mobileOpen && <div className="sidebar-backdrop" onClick={() => setMobileOpen(false)} />}
 
       <div className="app-main">
-        <Header onMenu={() => setMobileOpen(true)} onSignOut={authRequired ? signOut : undefined} />
+        <Header
+          onMenu={() => setMobileOpen(true)}
+          onSignOut={authRequired ? signOut : undefined}
+          theme={theme}
+          onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+        />
         <main className="page">
           <Routes>
             <Route path="/" element={<Dashboard />} />
