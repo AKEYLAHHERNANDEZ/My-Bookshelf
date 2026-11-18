@@ -13,7 +13,8 @@
     "d1:create": "npx wrangler d1 create my-bookshelf",
     "d1:migrate:local": "npx wrangler d1 migrations apply my-bookshelf --local",
     "d1:migrate:remote": "npx wrangler d1 migrations apply my-bookshelf --remote",
-    "d1:export-local": "node scripts/export-d1.js"
+    "d1:export-local": "node scripts/export-d1.js",
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
     "lucide-react": "^1.74.0",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.2.0",
+    "gh-pages": "^6.3.0",
     "vite": "^6.2.7"
   }
 }

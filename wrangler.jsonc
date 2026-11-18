@@ -7,19 +7,13 @@
 		"enabled": true
 	},
 	"vars": {
-		"ALLOWED_ORIGINS": "https://AkeylahHernandez.github.io,http://localhost:5173"
+		"ALLOWED_ORIGINS": "https://akeylahhernandez.github.io,http://localhost:5173"
 	},
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "my-bookshelf",
 			"database_id": "4d963517-4f96-47ad-8fde-315de413c470"
-		},
-		{
-			"binding": "my_bookshelf",
-			"database_name": "my-bookshelf",
-			"database_id": "4d963517-4f96-47ad-8fde-315de413c470",
-			"remote": true
 		}
 	]
 }
