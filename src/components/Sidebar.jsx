@@ -10,6 +10,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   RotateCcw,
+  UserRound,
   X,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
@@ -21,6 +22,7 @@ export const NAV_ITEMS = [
   { to: '/journal', label: 'Reading Journal', icon: NotebookPen },
   { to: '/insights', label: 'Reading Insights', icon: ChartColumn },
   { to: '/wishlist', label: 'Wishlist', icon: Gift },
+  { to: '/profile', label: 'Profile', icon: UserRound },
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {

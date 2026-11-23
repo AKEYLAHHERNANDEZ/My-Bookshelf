@@ -12,6 +12,7 @@ import ReadingTracker from './pages/ReadingTracker.jsx';
 import Journal from './pages/Journal.jsx';
 import Insights from './pages/Insights.jsx';
 import Wishlist from './pages/Wishlist.jsx';
+import Profile from './pages/Profile.jsx';
 import { useLibrary } from './context/LibraryContext.jsx';
 
 function SignInScreen({ onSignIn }) {
@@ -50,7 +51,7 @@ function SignInScreen({ onSignIn }) {
 }
 
 export default function App() {
-  const { authRequired, authenticated, signIn, signOut } = useLibrary();
+  const { authRequired, authenticated, signIn } = useLibrary();
   const [theme, setTheme] = useState(() => {
     try {
       return localStorage.getItem('my-bookshelf-theme') === 'dark' ? 'dark' : 'light';
@@ -107,9 +108,6 @@ export default function App() {
       <div className="app-main">
         <Header
           onMenu={() => setMobileOpen(true)}
-          onSignOut={authRequired ? signOut : undefined}
-          theme={theme}
-          onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
         />
         <main className="page">
           <Routes>
@@ -119,6 +117,7 @@ export default function App() {
             <Route path="/journal" element={<Journal />} />
             <Route path="/insights" element={<Insights />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/profile" element={<Profile theme={theme} onThemeChange={setTheme} />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>

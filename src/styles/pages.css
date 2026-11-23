@@ -289,6 +289,153 @@
   color: var(--muted);
 }
 
+/* ---------- Profile ---------- */
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.profile-intro {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-intro h2 {
+  font-size: 25px;
+}
+
+.profile-avatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  color: var(--forest);
+  background: var(--forest-light);
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.profile-card .card-head {
+  margin-bottom: 0;
+}
+
+.profile-card .card-head p,
+.profile-account-card p {
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.profile-name-form {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.profile-name-form label {
+  color: var(--brown);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-name-row input {
+  min-width: 0;
+}
+
+.profile-library-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.theme-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.theme-option {
+  min-height: 106px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  align-content: center;
+  align-items: center;
+  gap: 4px 9px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  color: var(--brown);
+  text-align: left;
+}
+
+.theme-option.active {
+  border-color: var(--forest);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--forest) 18%, transparent);
+  color: var(--forest);
+}
+
+.theme-option svg {
+  grid-row: span 2;
+}
+
+.theme-option span {
+  font-weight: 600;
+}
+
+.theme-option small {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.profile-hint {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.profile-account-card {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.profile-account-card h3 {
+  font-size: 18px;
+}
+
+.profile-local-badge {
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: var(--forest-light);
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 500;
+}
+
 /* ---------- Wishlist ---------- */
 
 .wish-grid {
@@ -345,6 +492,21 @@
 }
 
 @media (max-width: 620px) {
+  .profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-account-card {
+    grid-column: auto;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .profile-name-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .tracker-card {
     flex-direction: column;
     align-items: center;

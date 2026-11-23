@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, CheckCheck, Library, Pencil, Plus, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCheck, Library, Plus, Sparkles } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import StatCard from '../components/StatCard.jsx';
 import Cover from '../components/Cover.jsx';
@@ -29,7 +29,7 @@ const greeting = () => {
 };
 
 export default function Dashboard() {
-  const { books, stats, goal, profile, setProfileName, openDetails, openAddBook, loading } = useLibrary();
+  const { books, stats, goal, profile, openDetails, openAddBook, loading } = useLibrary();
   const [chartMode, setChartMode] = useState('books');
 
   if (loading) return null;
@@ -59,20 +59,12 @@ export default function Dashboard() {
 
   const message = MESSAGES[new Date().getDate() % MESSAGES.length];
 
-  const rename = () => {
-    const name = window.prompt('What should I call you?', profile.name);
-    if (name && name.trim()) setProfileName(name.trim());
-  };
-
   return (
     <div className="dashboard">
       <section className="welcome card">
         <div>
           <h2>
             {greeting()}, {profile.name}
-            <button className="icon-btn" onClick={rename} aria-label="Change your name" title="Change your name">
-              <Pencil size={14} />
-            </button>
           </h2>
           <p>{message}</p>
         </div>

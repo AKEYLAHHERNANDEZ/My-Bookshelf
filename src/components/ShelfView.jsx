@@ -120,20 +120,30 @@ export default function ShelfView({ books, allBooks }) {
           <strong>Your shelves</strong>
           <span>{editing ? 'Drag books between shelves, or use the move menus.' : 'A little room for every story.'}</span>
         </div>
-        <button className={`btn ${editing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setEditing((value) => !value)} aria-pressed={editing}>
-          <BookOpen size={16} /> {editing ? 'Done editing' : 'Edit shelves'}
-        </button>
-      </div>
-
-      {editing && (
-        <div className="shelf-options">
-          <label>
-            Book display
-            <select value={preferences.style} onChange={(event) => setPreferences((current) => ({ ...current, style: event.target.value }))}>
+        <div className="shelf-toolbar-actions">
+          <label className="shelf-display-control">
+            <span>Book display</span>
+            <select
+              value={preferences.style}
+              onChange={(event) => setPreferences((current) => ({ ...current, style: event.target.value }))}
+              aria-label="Show books as covers or spines"
+              aria-describedby="shelf-display-hint"
+            >
               <option value="spine">Spines</option>
               <option value="cover">Covers</option>
             </select>
           </label>
+          <button className={`btn ${editing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setEditing((value) => !value)} aria-pressed={editing}>
+            <BookOpen size={16} /> {editing ? 'Done editing' : 'Edit shelves'}
+          </button>
+        </div>
+      </div>
+      <p className="shelf-display-hint" id="shelf-display-hint">
+        Spine view creates illustrated spines from each book’s title and author; no separate spine-image service is needed.
+      </p>
+
+      {editing && (
+        <div className="shelf-options">
           <label>
             Shelf finish
             <select value={preferences.finish} onChange={(event) => setPreferences((current) => ({ ...current, finish: event.target.value }))}>

@@ -208,6 +208,7 @@ export function LibraryProvider({ children }) {
   async function setProfileName(name) {
     await service.setProfileName(name);
     await refresh();
+    toast('Profile updated');
   }
 
   async function resetDemoData() {
