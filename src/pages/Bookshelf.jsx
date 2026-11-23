@@ -1,20 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid2X2, Heart, Library, Plus, SearchX, Search, SlidersHorizontal, Funnel, Settings2 } from 'lucide-react';
+import { Grid2X2, Heart, Library, Plus, SearchX, BookOpen, Settings2 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import BookCard from '../components/BookCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import ShelfView from '../components/ShelfView.jsx';
-import { GENRES, SHELF_STATUSES } from '../utils/constants.js';
-
-const SORTS = {
-  added: 'Recently added',
-  title: 'Title (A–Z)',
-  author: 'Author (A–Z)',
-  rating: 'Highest rated',
-};
-
-const emptyFilters = { status: 'all', genre: 'all', sort: 'added', favorites: false };
+const emptyFilters = { status: 'all', favorites: false };
 
 function getSavedView() {
   try {
@@ -29,15 +20,13 @@ export default function Bookshelf() {
   const [params, setParams] = useSearchParams();
   const [filters, setFilters] = useState(emptyFilters);
   const [view, setView] = useState(getSavedView);
+  const [shelvesEditing, setShelvesEditing] = useState(false);
   const query = (params.get('q') || '').trim().toLowerCase();
 
   const shelf = useMemo(() => books.filter((b) => b.status !== 'Wishlist'), [books]);
-  const genres = useMemo(() => [...new Set([...GENRES, ...shelf.map((b) => b.genre).filter(Boolean)])].filter((g) => shelf.some((b) => b.genre === g)), [shelf]);
-
   const visible = useMemo(() => {
     const list = shelf.filter((b) => {
       if (filters.status !== 'all' && b.status !== filters.status) return false;
-      if (filters.genre !== 'all' && b.genre !== filters.genre) return false;
       if (filters.favorites && !b.favorite) return false;
       if (query) {
         const haystack = `${b.title} ${b.author} ${b.genre} ${b.isbn}`.toLowerCase();
@@ -46,13 +35,7 @@ export default function Bookshelf() {
       return true;
     });
 
-    const sorters = {
-      added: (a, b) => (a.dateAdded < b.dateAdded ? 1 : a.dateAdded > b.dateAdded ? -1 : 0),
-      title: (a, b) => a.title.localeCompare(b.title),
-      author: (a, b) => a.author.localeCompare(b.author),
-      rating: (a, b) => b.rating - a.rating || a.title.localeCompare(b.title),
-    };
-    return [...list].sort(sorters[filters.sort]);
+    return [...list].sort((a, b) => (a.dateAdded < b.dateAdded ? 1 : a.dateAdded > b.dateAdded ? -1 : 0));
   }, [shelf, filters, query]);
 
   const statusTabs = [
@@ -64,8 +47,7 @@ export default function Bookshelf() {
 
   if (loading) return null;
 
-  const set = (field) => (e) => setFilters((f) => ({ ...f, [field]: e.target.value }));
-  const hasFilters = filters.status !== 'all' || filters.genre !== 'all' || filters.favorites || query;
+  const hasFilters = filters.status !== 'all' || filters.favorites || query;
   const clearAll = () => {
     setFilters(emptyFilters);
     setParams({});
@@ -98,35 +80,15 @@ export default function Bookshelf() {
     <div className="bookshelf">
       <div className="library-heading">
         <div><span className="eyebrow">Your library</span><h2>{books.length} books</h2></div>
-        <button className="btn btn-primary" onClick={() => openAddBook()}><Plus size={16} /> Add</button>
+        <div className="library-heading-actions">
+          {view === 'shelf' && <button className={`btn ${shelvesEditing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setShelvesEditing((value) => !value)} aria-pressed={shelvesEditing}><BookOpen size={16} /> {shelvesEditing ? 'Done editing' : 'Edit shelves'}</button>}
+          <button className="btn btn-primary" onClick={() => openAddBook()}><Plus size={16} /> Add</button>
+        </div>
       </div>
       <div className="library-status-tabs" role="group" aria-label="Filter books by reading status">
         {statusTabs.map(({ status, label, count }) => <button key={status} className={filters.status === status ? 'active' : ''} onClick={() => setFilters((f) => ({ ...f, status: f.status === status ? 'all' : status }))} aria-pressed={filters.status === status}><span>{label}</span><small>{count}</small></button>)}
       </div>
       <div className="toolbar">
-        <span className="library-tools-label"><Search size={15} /> <SlidersHorizontal size={15} /> <Funnel size={15} /></span>
-        <select value={filters.status} onChange={set('status')} aria-label="Filter by status">
-          <option value="all">All statuses</option>
-          {SHELF_STATUSES.map((s) => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
-
-        <select value={filters.genre} onChange={set('genre')} aria-label="Filter by genre">
-          <option value="all">All genres</option>
-          {genres.map((g) => (
-            <option key={g}>{g}</option>
-          ))}
-        </select>
-
-        <select value={filters.sort} onChange={set('sort')} aria-label="Sort books">
-          {Object.entries(SORTS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-
         <button
           className={`chip ${filters.favorites ? 'active' : ''}`}
           onClick={() => setFilters((f) => ({ ...f, favorites: !f.favorites }))}
@@ -172,7 +134,7 @@ export default function Bookshelf() {
         />
       ) : (
         view === 'shelf' ? (
-          <ShelfView books={visible} allBooks={shelf} />
+          <ShelfView books={visible} allBooks={shelf} editing={shelvesEditing} />
         ) : (
           <div className="book-grid">
             {visible.map((b) => (

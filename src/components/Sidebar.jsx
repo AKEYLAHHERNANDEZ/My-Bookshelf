@@ -7,11 +7,9 @@ import {
   Library,
   NotebookPen,
   BookOpen,
-  CalendarDays,
   Database,
   PanelLeftClose,
   PanelLeftOpen,
-  RotateCcw,
   UserRound,
   X,
 } from 'lucide-react';
@@ -28,13 +26,7 @@ export const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
-  const { resetDemoData, openAddBook, authRequired } = useLibrary();
-
-  const handleReset = () => {
-    if (window.confirm('Replace everything with the original demo library? Your own changes will be lost.')) {
-      resetDemoData();
-    }
-  };
+  const { authRequired } = useLibrary();
 
   return (
     <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''} ${mobileOpen ? 'is-open' : ''}`} aria-label="Main">
@@ -63,16 +55,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
         ))}
       </nav>
 
-      <div className="sidebar-month"><CalendarDays size={17} /><span>{new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date())}</span></div>
-
-      <button className="btn btn-primary sidebar-add-book" onClick={() => openAddBook()}><span aria-hidden="true">+</span> Add a book</button>
-
       <div className="sidebar-footer">
         <div className="nav-link nav-button sidebar-data"><Database size={18} /><span className="nav-label">Your data · {authRequired ? 'Synced' : 'Local'}</span></div>
-        <button className="nav-link nav-button" onClick={handleReset} title="Reset demo data">
-          <RotateCcw size={18} />
-          <span className="nav-label">Reset demo data</span>
-        </button>
         <button
           className="nav-link nav-button collapse-btn"
           onClick={onToggle}

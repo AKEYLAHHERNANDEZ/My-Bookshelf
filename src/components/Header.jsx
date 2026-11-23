@@ -1,6 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Menu, Plus, Search } from 'lucide-react';
-import { useLibrary } from '../context/LibraryContext.jsx';
+import { Menu, Search } from 'lucide-react';
 import { formatLongDate } from '../utils/dates.js';
 
 const TITLES = {
@@ -17,7 +16,6 @@ export default function Header({ onMenu }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { openAddBook } = useLibrary();
 
   // The search box is the single source of truth for the bookshelf search:
   // typing anywhere jumps to the bookshelf with ?q=... in the URL.
@@ -49,10 +47,6 @@ export default function Header({ onMenu }) {
         />
       </label>
 
-      <button className="btn btn-primary" onClick={() => openAddBook()}>
-        <Plus size={18} />
-        <span className="btn-text">Add a Book</span>
-      </button>
     </header>
   );
 }

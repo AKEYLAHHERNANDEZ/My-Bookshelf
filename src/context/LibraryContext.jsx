@@ -197,7 +197,7 @@ export function LibraryProvider({ children }) {
     toast('Entry deleted');
   }
 
-  // ----- Goal, profile, demo -------------------------------------------------
+  // ----- Goal and profile ---------------------------------------------------
 
   async function setGoalTarget(target) {
     await service.setGoalTarget(target);
@@ -209,12 +209,6 @@ export function LibraryProvider({ children }) {
     await service.setProfileName(name);
     await refresh();
     toast('Profile updated');
-  }
-
-  async function resetDemoData() {
-    await service.resetDemoData();
-    await refresh();
-    toast('Demo data restored');
   }
 
   // ----- Dialog helpers ------------------------------------------------------
@@ -242,7 +236,6 @@ export function LibraryProvider({ children }) {
     removeEntry,
     setGoalTarget,
     setProfileName,
-    resetDemoData,
     // dialogs
     bookForm,
     openAddBook: (defaultStatus = 'Want to Read') => setBookForm({ defaultStatus }),

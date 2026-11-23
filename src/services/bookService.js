@@ -4,10 +4,8 @@
 // The UI uses a local HTTP API backed by SQLite. Keeping this as the only data
 // layer means components stay independent of storage details.
 // ---------------------------------------------------------------------------
-import { sampleBooks, sampleSessions, sampleEntries, sampleGoal } from '../data/sampleBooks.js';
 import { todayISO } from '../utils/dates.js';
 
-const STORAGE_KEY = 'my-bookshelf-v1';
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const SESSION_KEY = 'my-bookshelf-api-session';
 export const requiresLogin = Boolean(API_BASE_URL);
@@ -60,6 +58,8 @@ const blankBook = () => ({
   author: '',
   status: 'Want to Read',
   coverUrl: '',
+  spine_url: '',
+  display_mode: 'spine',
   isbn: '',
   description: '',
   genre: '',
@@ -77,15 +77,15 @@ const blankBook = () => ({
   priority: 'Medium',
 });
 
-function seed() {
-  return clone({
-    books: sampleBooks,
-    sessions: sampleSessions,
-    entries: sampleEntries,
-    goal: sampleGoal,
+function emptyLibrary() {
+  return {
+    books: [],
+    sessions: [],
+    entries: [],
+    goal: { year: new Date().getFullYear(), target: 20 },
     activeSessions: {},
     profile: { name: 'Reader' },
-  });
+  };
 }
 
 async function persist() {
@@ -106,23 +106,8 @@ async function read() {
     cache = remote;
     return cache;
   }
-  // Import an existing browser library once when the SQLite database is new.
-  let imported = false;
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && Array.isArray(parsed.books)) {
-        cache = { sessions: [], entries: [], activeSessions: {}, profile: { name: 'Reader' }, goal: clone(sampleGoal), ...parsed };
-        imported = true;
-      }
-    }
-  } catch {
-    /* corrupted data: fall through and reseed */
-  }
-  if (imported) await persist();
   if (!cache) {
-    cache = seed();
+    cache = emptyLibrary();
     await persist();
   }
   // Roll the goal over to the current year, keeping the chosen target.
@@ -223,12 +208,5 @@ export async function setGoalTarget(target) {
 export async function setProfileName(name) {
   const db = await read();
   db.profile = { ...db.profile, name };
-  await persist();
-}
-
-// ----- Demo data -------------------------------------------------------------
-
-export async function resetDemoData() {
-  cache = seed();
   await persist();
 }

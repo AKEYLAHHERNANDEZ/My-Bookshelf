@@ -5,6 +5,7 @@
 }
 
 .library-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; }
+.library-heading-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; }
 .library-heading .eyebrow { color:var(--muted); font-size:11px; }
 .library-heading h2 { font:700 30px/1.1 var(--font-body); letter-spacing:-.04em; }
 .library-status-tabs { display:flex; gap:22px; overflow:auto; border-bottom:1px solid var(--line); margin-bottom:16px; }
@@ -25,7 +26,10 @@
 .form-display-mode .view-switch button { min-width:56px; padding:0 8px; font-size:12px; }
 .visually-hidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
-.shelf-room { background: radial-gradient(ellipse at 50% 0, rgba(255,255,255,.65), transparent 70%), var(--sand); }
+.shelf-room { width:fit-content; max-width:100%; background: radial-gradient(ellipse at 50% 0, rgba(255,255,255,.65), transparent 70%), var(--sand); }
+.shelf-stack { align-items:flex-start; }
+.shelf-row { width:fit-content; max-width:100%; }
+.shelf-books { width:max-content; max-width:100%; }
 .shelf-size-s { --shelf-scale:.82; }
 .shelf-size-m { --shelf-scale:1; }
 .shelf-size-l { --shelf-scale:1.18; }
@@ -60,17 +64,13 @@
 
 .brand-copy { display:flex; flex-direction:column; line-height:1.15; }
 .brand-copy small { color:rgba(255,255,255,.62); font-size:10px; }
-.sidebar-add-book { width:100%; justify-content:center; margin:20px 0; }
-.sidebar-add-book span { font-size:19px; line-height:1; }
-.sidebar-month { display:flex; align-items:center; gap:13px; padding:12px 14px 0; color:#cfdacf; font-size:13px; }
-.sidebar.is-collapsed .brand-copy,
-.sidebar.is-collapsed .sidebar-month,
-.sidebar.is-collapsed .sidebar-add-book { display:none; }
+.sidebar.is-collapsed .brand-copy { display:none; }
 .sidebar-data { cursor:default; }
 .sidebar-data:hover { background:transparent; }
 
 @media (max-width:620px) {
   .library-heading h2 { font-size:25px; }
+  .library-heading-actions { flex-wrap:wrap; }
   .library-status-tabs { gap:16px; }
   .library-year-heading { align-items:flex-start; flex-direction:column; gap:2px; }
   .spine-form-row { flex-wrap:wrap; }

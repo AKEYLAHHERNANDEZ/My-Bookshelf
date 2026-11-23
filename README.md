@@ -62,7 +62,7 @@ npm run d1:export-local
 npx wrangler d1 execute my-bookshelf --remote --file=./d1-import.sql
 ```
 
-The export file contains your library data. It is gitignored; delete it after the import. If you skip this step, the app initializes D1 with the demo library (or imports old browser `localStorage` data if present).
+The export file contains your library data. It is gitignored; delete it after the import. A new library starts empty, ready for your books.
 
 ### Local testing with the hosted API
 

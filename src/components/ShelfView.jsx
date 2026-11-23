@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import Cover from './Cover.jsx';
 
@@ -68,10 +68,9 @@ function colorFor(book) {
   return SPINE_COLORS[hash % SPINE_COLORS.length];
 }
 
-export default function ShelfView({ books, allBooks }) {
+export default function ShelfView({ books, allBooks, editing }) {
   const { openDetails } = useLibrary();
   const [preferences, setPreferences] = useState(readPreferences);
-  const [editing, setEditing] = useState(false);
   const [draggedId, setDraggedId] = useState(null);
 
   useEffect(() => {
@@ -170,9 +169,6 @@ export default function ShelfView({ books, allBooks }) {
               <option value="mixed">Per book</option>
             </select>
           </label>
-          <button className={`btn ${editing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setEditing((value) => !value)} aria-pressed={editing}>
-            <BookOpen size={16} /> {editing ? 'Done editing' : 'Edit shelves'}
-          </button>
         </div>
       </div>
       <p className="shelf-display-hint" id="shelf-display-hint">
