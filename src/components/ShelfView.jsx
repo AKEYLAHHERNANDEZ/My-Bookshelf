@@ -5,7 +5,7 @@ import Cover from './Cover.jsx';
 
 const STORAGE_KEY = 'my-bookshelf-display-v1';
 const FINISHES = ['oak', 'walnut', 'painted'];
-const DEFAULTS = { finish: 'oak', style: 'spine', count: 3, assignments: {}, names: [], order: [] };
+const DEFAULTS = { finish: 'oak', style: 'mixed', size: 'm', count: 3, assignments: {}, names: [], order: [] };
 const SPINE_COLORS = ['#34483a', '#665744', '#5e7a8c', '#8c4a3b', '#4b4a63', '#7a6a2e', '#3e5f5c'];
 
 function readPreferences() {
@@ -16,7 +16,8 @@ function readPreferences() {
       ...DEFAULTS,
       ...saved,
       finish: FINISHES.includes(saved.finish) ? saved.finish : DEFAULTS.finish,
-      style: saved.style === 'cover' ? 'cover' : 'spine',
+      style: ['cover', 'spine', 'mixed'].includes(saved.style) ? saved.style : 'mixed',
+      size: ['s', 'm', 'l'].includes(saved.size) ? saved.size : 'm',
       count: Math.min(8, Math.max(1, Number(saved.count) || DEFAULTS.count)),
       assignments: saved.assignments && typeof saved.assignments === 'object' ? saved.assignments : {},
       names: Array.isArray(saved.names) ? saved.names : [],
@@ -25,6 +26,41 @@ function readPreferences() {
   } catch {
     return DEFAULTS;
   }
+}
+
+function ShelfBookArt({ book, mode }) {
+  const [failed, setFailed] = useState(false);
+  const [color, setColor] = useState(() => colorFor(book));
+  useEffect(() => {
+    setFailed(false);
+    if (!book.coverUrl) return;
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        context.drawImage(image, 0, 0, 1, 1);
+        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+        setColor(`rgb(${r}, ${g}, ${b})`);
+      } catch { setColor(colorFor(book)); }
+    };
+    image.onerror = () => setColor(colorFor(book));
+    image.src = book.coverUrl;
+  }, [book.coverUrl, book.spine_url, book.title]);
+
+  if (mode === 'cover') return <Cover book={book} size="sm" />;
+  const height = Math.max(118, Math.min(188, 132 + Math.round((Number(book.pages) || 240) / 30)));
+  const width = Math.max(26, Math.min(48, 27 + Math.round((Number(book.pages) || 240) / 70)));
+  return (
+    <span className={`book-spine ${book.spine_url && !failed ? 'book-spine-image' : ''}`} style={{ '--spine-color': color, '--spine-height': `${height}px`, '--spine-width': `${width}px` }}>
+      {book.spine_url && !failed ? <img src={book.spine_url} alt="" onError={() => setFailed(true)} /> : <>
+        <span className="book-spine-title">{book.title}</span>
+        <span className="book-spine-author">{book.author}</span>
+      </>}
+    </span>
+  );
 }
 
 function colorFor(book) {
@@ -114,7 +150,7 @@ export default function ShelfView({ books, allBooks }) {
   });
 
   return (
-    <section className={`shelf-room shelf-${preferences.finish}`} aria-label="Books displayed on shelves">
+    <section id="shelf-settings" className={`shelf-room shelf-${preferences.finish} shelf-size-${preferences.size}`} aria-label="Books displayed on shelves">
       <div className="shelf-toolbar">
         <div>
           <strong>Your shelves</strong>
@@ -122,7 +158,7 @@ export default function ShelfView({ books, allBooks }) {
         </div>
         <div className="shelf-toolbar-actions">
           <label className="shelf-display-control">
-            <span>Book display</span>
+            <span>See</span>
             <select
               value={preferences.style}
               onChange={(event) => setPreferences((current) => ({ ...current, style: event.target.value }))}
@@ -131,6 +167,7 @@ export default function ShelfView({ books, allBooks }) {
             >
               <option value="spine">Spines</option>
               <option value="cover">Covers</option>
+              <option value="mixed">Per book</option>
             </select>
           </label>
           <button className={`btn ${editing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setEditing((value) => !value)} aria-pressed={editing}>
@@ -144,6 +181,12 @@ export default function ShelfView({ books, allBooks }) {
 
       {editing && (
         <div className="shelf-options">
+          <label>
+            Shelf size
+            <select value={preferences.size} onChange={(event) => setPreferences((current) => ({ ...current, size: event.target.value }))}>
+              <option value="s">S</option><option value="m">M</option><option value="l">L</option>
+            </select>
+          </label>
           <label>
             Shelf finish
             <select value={preferences.finish} onChange={(event) => setPreferences((current) => ({ ...current, finish: event.target.value }))}>
@@ -214,9 +257,9 @@ export default function ShelfView({ books, allBooks }) {
               </div>
               <div className={`shelf-books shelf-books-${preferences.style} ${shelfBooks.length === 0 ? 'is-empty' : ''}`}>
                 {shelfBooks.length === 0 && <span className="shelf-empty-note">Drop a book here</span>}
-                {shelfBooks.map((book) => (
+                {shelfBooks.map((book, bookIndex) => (
                   <div
-                    className="shelf-book"
+                    className={`shelf-book ${shelfIndex === preferences.count - 1 && bookIndex < 3 && shelfBooks.length > 4 ? 'shelf-book-flat' : ''}`}
                     key={book.id}
                     draggable={editing}
                     onDragStart={(event) => {
@@ -238,14 +281,9 @@ export default function ShelfView({ books, allBooks }) {
                     }}
                   >
                     <button className="shelf-book-button" onClick={() => openDetails(book.id)} aria-label={`${book.title} by ${book.author}`}>
-                      {preferences.style === 'cover' ? (
-                        <Cover book={book} size="sm" />
-                      ) : (
-                        <span className="book-spine" style={{ '--spine-color': colorFor(book), '--spine-height': `${138 + (book.title.length % 34)}px` }}>
-                          <span className="book-spine-title">{book.title}</span>
-                          <span className="book-spine-author">{book.author}</span>
-                        </span>
-                      )}
+                      {shelfIndex === preferences.count - 1 && bookIndex < 3 && shelfBooks.length > 4
+                        ? <span className="flat-book-title" style={{ '--flat-color': colorFor(book) }}>{book.title}</span>
+                        : <ShelfBookArt book={book} mode={preferences.style === 'mixed' ? (book.display_mode || 'spine') : preferences.style} />}
                     </button>
                   </div>
                 ))}

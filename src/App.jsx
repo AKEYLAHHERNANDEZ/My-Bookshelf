@@ -54,7 +54,8 @@ export default function App() {
   const { authRequired, authenticated, signIn } = useLibrary();
   const [theme, setTheme] = useState(() => {
     try {
-      return localStorage.getItem('my-bookshelf-theme') === 'dark' ? 'dark' : 'light';
+      const savedTheme = localStorage.getItem('my-bookshelf-theme');
+      return savedTheme === 'dark' ? 'noir' : ['noir', 'midnight'].includes(savedTheme) ? savedTheme : 'light';
     } catch {
       return 'light';
     }
@@ -71,7 +72,7 @@ export default function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
+    document.documentElement.style.colorScheme = theme === 'light' ? 'light' : 'dark';
     try {
       localStorage.setItem('my-bookshelf-theme', theme);
     } catch {

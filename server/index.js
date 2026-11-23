@@ -28,20 +28,44 @@ async function sendJson(res, status, value) {
 
 async function readBody(req) {
   let body = '';
-  for await (const chunk of req) body += chunk;
+  for await (const chunk of req) {
+    body += chunk;
+    if (body.length > 32 * 1024 * 1024) throw new Error('Request too large');
+  }
   return JSON.parse(body || '{}');
+}
+
+function normalizeLibrary(data) {
+  if (!data || !Array.isArray(data.books)) return null;
+  for (const book of data.books) {
+    if (book.display_mode != null && !['spine', 'cover'].includes(book.display_mode)) return null;
+    if (book.spine_url != null && (typeof book.spine_url !== 'string' || book.spine_url.length > 200 * 1024)) return null;
+    book.spine_url ??= null;
+    book.display_mode ??= 'spine';
+  }
+  return data;
+}
+
+const existingState = getState.get();
+if (existingState) {
+  try {
+    const library = normalizeLibrary(JSON.parse(existingState.data));
+    if (library) saveState.run(JSON.stringify(library));
+  } catch {
+    // Leave malformed legacy data untouched so it can be inspected or restored.
+  }
 }
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/api/library' && req.method === 'GET') {
     const row = getState.get();
-    return sendJson(res, 200, row ? JSON.parse(row.data) : null);
+    return sendJson(res, 200, row ? normalizeLibrary(JSON.parse(row.data)) : null);
   }
   if (url.pathname === '/api/library' && req.method === 'PUT') {
     try {
       const data = await readBody(req);
-      if (!data || !Array.isArray(data.books)) return sendJson(res, 400, { error: 'Invalid library data' });
+      if (!normalizeLibrary(data)) return sendJson(res, 400, { error: 'Invalid library data or book spine fields' });
       saveState.run(JSON.stringify(data));
       return sendJson(res, 200, { ok: true });
     } catch {

@@ -7,6 +7,8 @@ import {
   Library,
   NotebookPen,
   BookOpen,
+  CalendarDays,
+  Database,
   PanelLeftClose,
   PanelLeftOpen,
   RotateCcw,
@@ -26,7 +28,7 @@ export const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
-  const { resetDemoData } = useLibrary();
+  const { resetDemoData, openAddBook, authRequired } = useLibrary();
 
   const handleReset = () => {
     if (window.confirm('Replace everything with the original demo library? Your own changes will be lost.')) {
@@ -40,7 +42,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
         <span className="brand-mark">
           <BookMarked size={22} />
         </span>
-        <span className="brand-name">My Bookshelf</span>
+        <span className="brand-copy"><span className="brand-name">Book Tracker</span><small>Your personal library</small></span>
         <button className="sidebar-close icon-btn" onClick={onClose} aria-label="Close menu">
           <X size={20} />
         </button>
@@ -61,7 +63,12 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
         ))}
       </nav>
 
+      <div className="sidebar-month"><CalendarDays size={17} /><span>{new Intl.DateTimeFormat(undefined, { month: 'long' }).format(new Date())}</span></div>
+
+      <button className="btn btn-primary sidebar-add-book" onClick={() => openAddBook()}><span aria-hidden="true">+</span> Add a book</button>
+
       <div className="sidebar-footer">
+        <div className="nav-link nav-button sidebar-data"><Database size={18} /><span className="nav-label">Your data · {authRequired ? 'Synced' : 'Local'}</span></div>
         <button className="nav-link nav-button" onClick={handleReset} title="Reset demo data">
           <RotateCcw size={18} />
           <span className="nav-label">Reset demo data</span>

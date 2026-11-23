@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Search, Upload } from 'lucide-react';
 import Modal from './Modal.jsx';
 import Cover from './Cover.jsx';
 import Stars from './Stars.jsx';
@@ -14,6 +14,8 @@ const blank = (status) => ({
   author: '',
   status,
   coverUrl: '',
+  spine_url: '',
+  display_mode: 'spine',
   isbn: '',
   description: '',
   genre: '',
@@ -58,8 +60,40 @@ function BookForm({ config, onClose }) {
   const [results, setResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const spineFile = useRef(null);
+  const [uploadError, setUploadError] = useState('');
+  const [spinePreviewFailed, setSpinePreviewFailed] = useState(false);
 
   const set = (field) => (e) => setF((prev) => ({ ...prev, [field]: e.target.value }));
+
+  const uploadSpine = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    setUploadError('');
+    const image = new Image();
+    const reader = new FileReader();
+    reader.onload = () => {
+      image.onload = () => {
+        const scale = Math.min(1, 120 / image.width, 600 / image.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        if (dataUrl.length > 200 * 1024) {
+          setUploadError('This image is still too large after resizing. Choose a simpler image.');
+          return;
+        }
+        setSpinePreviewFailed(false);
+        setF((prev) => ({ ...prev, spine_url: dataUrl }));
+      };
+      image.onerror = () => setUploadError('This image could not be opened.');
+      image.src = String(reader.result);
+    };
+    reader.onerror = () => setUploadError('This image could not be read.');
+    reader.readAsDataURL(file);
+  };
 
   const runSearch = async (e) => {
     e.preventDefault();
@@ -96,6 +130,7 @@ function BookForm({ config, onClose }) {
     if (!f.title.trim()) next.title = 'Please enter a title.';
     if (!f.author.trim()) next.author = 'Please enter an author.';
     if (!f.status) next.status = 'Choose a reading status.';
+    if (f.spine_url.length > 200 * 1024) next.spine = 'Spine image URL must be 200 KB or smaller.';
     const pages = f.pages === '' ? null : Number(f.pages);
     if (pages !== null && (!Number.isInteger(pages) || pages < 1)) next.pages = 'Pages must be a whole number above 0.';
     if (f.year !== '' && (!Number.isInteger(Number(f.year)) || Number(f.year) < 1 || Number(f.year) > new Date().getFullYear() + 1))
@@ -117,6 +152,8 @@ function BookForm({ config, onClose }) {
       author: f.author.trim(),
       status: f.status,
       coverUrl: f.coverUrl.trim(),
+      spine_url: f.spine_url.trim(),
+      display_mode: f.display_mode === 'cover' ? 'cover' : 'spine',
       isbn: f.isbn.trim(),
       description: f.description.trim(),
       genre: f.genre,
@@ -278,6 +315,27 @@ function BookForm({ config, onClose }) {
             <div className="cover-field">
               <input id="bk-cover" value={f.coverUrl} onChange={set('coverUrl')} placeholder="https://…  (optional, a cover is generated if empty)" />
               <Cover book={f} size="xs" />
+            </div>
+          </div>
+
+          <div className="field span-2">
+            <label htmlFor="bk-spine">Spine image URL</label>
+            <div className="spine-form-row">
+              <input id="bk-spine" value={f.spine_url} onChange={(event) => { setSpinePreviewFailed(false); set('spine_url')(event); }} placeholder="https://… (optional)" />
+              <input ref={spineFile} className="visually-hidden" type="file" accept="image/*" onChange={uploadSpine} aria-label="Upload spine image" />
+              <button type="button" className="btn btn-ghost" onClick={() => spineFile.current?.click()}><Upload size={16} /> Upload image</button>
+              <div className="spine-preview" aria-label={`Spine preview for ${f.title || 'book'}`}>
+                {f.spine_url && !spinePreviewFailed ? <img src={f.spine_url} alt={`Spine preview: ${f.title || 'book'}`} onError={() => setSpinePreviewFailed(true)} /> : <span>{f.title || 'Book title'}</span>}
+              </div>
+            </div>
+            {errors.spine && <span className="field-error">{errors.spine}</span>}
+            {uploadError && <span className="field-error" role="alert">{uploadError}</span>}
+            <div className="shelf-display-control form-display-mode">
+              <span>Show on shelf as:</span>
+              <div className="view-switch" role="group" aria-label="Show on shelf as">
+                <button type="button" className={f.display_mode === 'spine' ? 'active' : ''} aria-pressed={f.display_mode === 'spine'} onClick={() => setF((p) => ({ ...p, display_mode: 'spine' }))}>Spine</button>
+                <button type="button" className={f.display_mode === 'cover' ? 'active' : ''} aria-pressed={f.display_mode === 'cover'} onClick={() => setF((p) => ({ ...p, display_mode: 'cover' }))}>Cover</button>
+              </div>
             </div>
           </div>
 

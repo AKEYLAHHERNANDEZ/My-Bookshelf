@@ -1,4 +1,16 @@
 const encoder = new TextEncoder();
+const MAX_SPINE_URL_LENGTH = 200 * 1024;
+
+function normalizeLibrary(data) {
+  if (!data || !Array.isArray(data.books)) return null;
+  for (const book of data.books) {
+    if (book.display_mode != null && !['spine', 'cover'].includes(book.display_mode)) return null;
+    if (book.spine_url != null && (typeof book.spine_url !== 'string' || book.spine_url.length > MAX_SPINE_URL_LENGTH)) return null;
+    book.spine_url ??= null;
+    book.display_mode ??= 'spine';
+  }
+  return data;
+}
 
 function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
@@ -94,12 +106,12 @@ export default {
 
     if (request.method === 'GET') {
       const row = await env.DB.prepare('SELECT data FROM library_state WHERE id = 1').first();
-      return json(row ? JSON.parse(row.data) : null, 200, cors);
+      return json(row ? normalizeLibrary(JSON.parse(row.data)) : null, 200, cors);
     }
     if (request.method === 'PUT') {
       try {
         const data = await request.json();
-        if (!data || !Array.isArray(data.books)) return json({ error: 'Invalid library data.' }, 400, cors);
+        if (!normalizeLibrary(data)) return json({ error: 'Invalid library data or book spine fields.' }, 400, cors);
         await env.DB.prepare(`INSERT INTO library_state (id, data, updated_at) VALUES (1, ?, CURRENT_TIMESTAMP)
           ON CONFLICT(id) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP`)
           .bind(JSON.stringify(data)).run();

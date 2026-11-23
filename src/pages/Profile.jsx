@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, LogOut, Moon, Sun, UserRound } from 'lucide-react';
+import { BookOpen, LogOut, Moon, Sun, UserRound, Contrast } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 
 export default function Profile({ theme, onThemeChange }) {
@@ -63,10 +63,15 @@ export default function Profile({ theme, onThemeChange }) {
               <span>Light</span>
               <small>Bright and warm</small>
             </button>
-            <button className={`theme-option ${theme === 'dark' ? 'active' : ''}`} onClick={() => onThemeChange('dark')} aria-pressed={theme === 'dark'}>
+            <button className={`theme-option ${theme === 'noir' ? 'active' : ''}`} onClick={() => onThemeChange('noir')} aria-pressed={theme === 'noir'}>
               <Moon size={19} />
-              <span>Dark</span>
-              <small>Easy on the eyes</small>
+              <span>Noir</span>
+              <small>Monochrome shelf</small>
+            </button>
+            <button className={`theme-option ${theme === 'midnight' ? 'active' : ''}`} onClick={() => onThemeChange('midnight')} aria-pressed={theme === 'midnight'}>
+              <Contrast size={19} />
+              <span>Midnight</span>
+              <small>Blue night palette</small>
             </button>
           </div>
           <p className="profile-hint">Your theme preference is saved in this browser.</p>

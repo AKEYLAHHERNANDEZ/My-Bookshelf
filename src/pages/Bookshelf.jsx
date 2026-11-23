@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid2X2, Heart, Library, Plus, SearchX } from 'lucide-react';
+import { Grid2X2, Heart, Library, Plus, SearchX, Search, SlidersHorizontal, Funnel, Settings2 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import BookCard from '../components/BookCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
@@ -25,7 +25,7 @@ function getSavedView() {
 }
 
 export default function Bookshelf() {
-  const { books, openAddBook, loading } = useLibrary();
+  const { books, sessions, openAddBook, loading } = useLibrary();
   const [params, setParams] = useSearchParams();
   const [filters, setFilters] = useState(emptyFilters);
   const [view, setView] = useState(getSavedView);
@@ -54,6 +54,13 @@ export default function Bookshelf() {
     };
     return [...list].sort(sorters[filters.sort]);
   }, [shelf, filters, query]);
+
+  const statusTabs = [
+    ['Currently Reading', 'Reading'], ['Want to Read', 'To read'], ['Finished', 'Read'], ['Abandoned', 'DNF'],
+  ].map(([status, label]) => ({ status, label, count: shelf.filter((book) => book.status === status).length }));
+  const totalPages = shelf.reduce((sum, book) => sum + (Number(book.pages) || 0), 0);
+  const year = new Date().getFullYear();
+  const hoursRead = Math.round(sessions.filter((session) => String(session.date).startsWith(String(year))).reduce((sum, session) => sum + (Number(session.minutes) || 0), 0) / 60);
 
   if (loading) return null;
 
@@ -89,7 +96,15 @@ export default function Bookshelf() {
 
   return (
     <div className="bookshelf">
+      <div className="library-heading">
+        <div><span className="eyebrow">Your library</span><h2>{books.length} books</h2></div>
+        <button className="btn btn-primary" onClick={() => openAddBook()}><Plus size={16} /> Add</button>
+      </div>
+      <div className="library-status-tabs" role="group" aria-label="Filter books by reading status">
+        {statusTabs.map(({ status, label, count }) => <button key={status} className={filters.status === status ? 'active' : ''} onClick={() => setFilters((f) => ({ ...f, status: f.status === status ? 'all' : status }))} aria-pressed={filters.status === status}><span>{label}</span><small>{count}</small></button>)}
+      </div>
       <div className="toolbar">
+        <span className="library-tools-label"><Search size={15} /> <SlidersHorizontal size={15} /> <Funnel size={15} /></span>
         <select value={filters.status} onChange={set('status')} aria-label="Filter by status">
           <option value="all">All statuses</option>
           {SHELF_STATUSES.map((s) => (
@@ -127,6 +142,7 @@ export default function Bookshelf() {
           <button className={view === 'shelf' ? 'active' : ''} onClick={() => changeView('shelf')} aria-pressed={view === 'shelf'} aria-label="Shelf view">
             <Library size={16} />
           </button>
+          <button type="button" onClick={() => document.getElementById('shelf-settings')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shelf settings"><Settings2 size={16} /></button>
         </div>
 
         <span className="toolbar-count">
@@ -140,6 +156,8 @@ export default function Bookshelf() {
           </button>
         )}
       </div>
+
+      <div className="library-year-heading"><h3>{year}</h3><span>{shelf.length} books · {totalPages.toLocaleString()} pages · {hoursRead} h read</span></div>
 
       {visible.length === 0 ? (
         <EmptyState
