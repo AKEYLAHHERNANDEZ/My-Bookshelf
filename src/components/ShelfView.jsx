@@ -5,7 +5,7 @@ import Cover from './Cover.jsx';
 
 const STORAGE_KEY = 'my-bookshelf-display-v1';
 const FINISHES = ['oak', 'walnut', 'painted'];
-const DEFAULTS = { finish: 'oak', style: 'mixed', size: 'm', count: 3, assignments: {}, names: [], order: [] };
+const DEFAULTS = { finish: 'oak', style: 'mixed', size: 'm', count: 2, assignments: {}, names: [], order: [] };
 const SPINE_COLORS = ['#34483a', '#665744', '#5e7a8c', '#8c4a3b', '#4b4a63', '#7a6a2e', '#3e5f5c'];
 
 function readPreferences() {
@@ -149,7 +149,7 @@ export default function ShelfView({ books, allBooks, editing }) {
   });
 
   return (
-    <section id="shelf-settings" className={`shelf-room shelf-${preferences.finish} shelf-size-${preferences.size}`} aria-label="Books displayed on shelves">
+    <section id="shelf-settings" className={`shelf-room shelf-${preferences.finish} shelf-size-${preferences.size} ${editing ? 'is-editing' : ''}`} aria-label="Books displayed on shelves">
       <div className="shelf-toolbar">
         <div>
           <strong>Your shelves</strong>
@@ -252,7 +252,7 @@ export default function ShelfView({ books, allBooks, editing }) {
                 )}
               </div>
               <div className={`shelf-books shelf-books-${preferences.style} ${shelfBooks.length === 0 ? 'is-empty' : ''}`}>
-                {shelfBooks.length === 0 && <span className="shelf-empty-note">Drop a book here</span>}
+                {shelfBooks.length === 0 && editing && <span className="shelf-empty-note">Drop a book here</span>}
                 {shelfBooks.map((book, bookIndex) => (
                   <div
                     className={`shelf-book ${shelfIndex === preferences.count - 1 && bookIndex < 3 && shelfBooks.length > 4 ? 'shelf-book-flat' : ''}`}

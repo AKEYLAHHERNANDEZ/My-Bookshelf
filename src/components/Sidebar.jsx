@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   BookMarked,
   ChartColumn,
@@ -10,6 +10,7 @@ import {
   Database,
   PanelLeftClose,
   PanelLeftOpen,
+  Plus,
   UserRound,
   X,
 } from 'lucide-react';
@@ -26,7 +27,8 @@ export const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
-  const { authRequired } = useLibrary();
+  const { authRequired, openAddBook } = useLibrary();
+  const { pathname } = useLocation();
 
   return (
     <aside className={`sidebar ${collapsed ? 'is-collapsed' : ''} ${mobileOpen ? 'is-open' : ''}`} aria-label="Main">
@@ -54,6 +56,13 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onClose }) {
           </NavLink>
         ))}
       </nav>
+
+      {pathname === '/bookshelf' && (
+        <button className="sidebar-add-book" onClick={() => openAddBook()} aria-label="Add a book">
+          <Plus size={16} />
+          <span>Add a book</span>
+        </button>
+      )}
 
       <div className="sidebar-footer">
         <div className="nav-link nav-button sidebar-data"><Database size={18} /><span className="nav-label">Your data · {authRequired ? 'Synced' : 'Local'}</span></div>

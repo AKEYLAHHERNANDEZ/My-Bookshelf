@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Grid2X2, Heart, Library, Plus, SearchX, BookOpen, Settings2 } from 'lucide-react';
+import { Grid2X2, Heart, Library, Plus, Search, SearchX, Settings2 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext.jsx';
 import BookCard from '../components/BookCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
@@ -9,7 +9,7 @@ const emptyFilters = { status: 'all', favorites: false };
 
 function getSavedView() {
   try {
-    return localStorage.getItem('my-bookshelf-view') === 'shelf' ? 'shelf' : 'grid';
+    return localStorage.getItem('my-bookshelf-view') === 'grid' ? 'grid' : 'shelf';
   } catch {
     return 'grid';
   }
@@ -45,7 +45,7 @@ export default function Bookshelf() {
   const year = new Date().getFullYear();
   const hoursRead = Math.round(sessions.filter((session) => String(session.date).startsWith(String(year))).reduce((sum, session) => sum + (Number(session.minutes) || 0), 0) / 60);
 
-  if (loading) return null;
+  if (loading) return <div className="bookshelf-loading" role="status">Loading your library...</div>;
 
   const hasFilters = filters.status !== 'all' || filters.favorites || query;
   const clearAll = () => {
@@ -54,6 +54,7 @@ export default function Bookshelf() {
   };
   const changeView = (nextView) => {
     setView(nextView);
+    if (nextView !== 'shelf') setShelvesEditing(false);
     try {
       localStorage.setItem('my-bookshelf-view', nextView);
     } catch {
@@ -79,9 +80,8 @@ export default function Bookshelf() {
   return (
     <div className="bookshelf">
       <div className="library-heading">
-        <div><span className="eyebrow">Your library</span><h2>{books.length} books</h2></div>
+        <div><span className="eyebrow">Your library</span><h2>{shelf.length} books</h2></div>
         <div className="library-heading-actions">
-          {view === 'shelf' && <button className={`btn ${shelvesEditing ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setShelvesEditing((value) => !value)} aria-pressed={shelvesEditing}><BookOpen size={16} /> {shelvesEditing ? 'Done editing' : 'Edit shelves'}</button>}
           <button className="btn btn-primary" onClick={() => openAddBook()}><Plus size={16} /> Add</button>
         </div>
       </div>
@@ -89,6 +89,21 @@ export default function Bookshelf() {
         {statusTabs.map(({ status, label, count }) => <button key={status} className={filters.status === status ? 'active' : ''} onClick={() => setFilters((f) => ({ ...f, status: f.status === status ? 'all' : status }))} aria-pressed={filters.status === status}><span>{label}</span><small>{count}</small></button>)}
       </div>
       <div className="toolbar">
+        <label className="library-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            type="search"
+            value={params.get('q') || ''}
+            onChange={(event) => {
+              const next = new URLSearchParams(params);
+              if (event.target.value) next.set('q', event.target.value);
+              else next.delete('q');
+              setParams(next, { replace: true });
+            }}
+            placeholder="Search your library"
+            aria-label="Search your library"
+          />
+        </label>
         <button
           className={`chip ${filters.favorites ? 'active' : ''}`}
           onClick={() => setFilters((f) => ({ ...f, favorites: !f.favorites }))}
@@ -104,15 +119,29 @@ export default function Bookshelf() {
           <button className={view === 'shelf' ? 'active' : ''} onClick={() => changeView('shelf')} aria-pressed={view === 'shelf'} aria-label="Shelf view">
             <Library size={16} />
           </button>
-          <button type="button" onClick={() => document.getElementById('shelf-settings')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shelf settings"><Settings2 size={16} /></button>
+          <button
+            type="button"
+            className={shelvesEditing ? 'active' : ''}
+            onClick={() => {
+              if (view !== 'shelf') {
+                changeView('shelf');
+                setShelvesEditing(true);
+              } else {
+                setShelvesEditing((value) => !value);
+              }
+            }}
+            aria-label={view === 'shelf' ? (shelvesEditing ? 'Done editing shelves' : 'Edit shelves') : 'Show and edit shelves'}
+            aria-pressed={view === 'shelf' && shelvesEditing}
+          >
+            <Settings2 size={16} />
+          </button>
         </div>
 
-        <span className="toolbar-count">
+        <span className="toolbar-count" aria-live="polite">
           {visible.length} {visible.length === 1 ? 'book' : 'books'}
-          {query && <> matching “{params.get('q')}”</>}
         </span>
 
-        {hasFilters && (
+        {hasFilters && visible.length > 0 && (
           <button className="link-btn" onClick={clearAll}>
             Clear filters
           </button>

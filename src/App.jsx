@@ -97,7 +97,7 @@ export default function App() {
   if (authRequired && !authenticated) return <SignInScreen onSignIn={signIn} />;
 
   return (
-    <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`app-shell ${collapsed ? 'sidebar-collapsed' : ''} ${location.pathname === '/bookshelf' ? 'bookshelf-screen' : ''}`}>
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed((c) => !c)}
